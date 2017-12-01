@@ -224,7 +224,7 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   char *mem;
   uint a;
 
-  if(newsz >= KERNBASE)
+  if(newsz > KERNBASE)
     return 0;
   if(newsz < oldsz)
     return oldsz;
@@ -313,7 +313,7 @@ clearpteu(pde_t *pgdir, char *uva)
 // Given a parent process's page table, create a copy
 // of it for a child.
 pde_t*
-copyuvm(pde_t *pgdir, uint sz)
+copyuvm(pde_t *pgdir, uint sz, uint userstack_top)
 {
   pde_t *d;
   pte_t *pte;
@@ -335,7 +335,32 @@ copyuvm(pde_t *pgdir, uint sz)
     if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0)
       goto bad;
   }
+
+  if(userstack_top == 0) {
+    return d;
+  }
+
+  //Need for loop traversing from top stack to bottom (before KERNBASE)
+  for(i = userstack_top; i < (KERNBASE-1); i+= PGSIZE) {
+    if((pte = walkpgdir(pgdir, (void*)i, 0)) == 0) {
+      panic("copyuvm error... can't find pte");
+    }
+    if(!(*pte & PTE_P)) {
+      panic("copyuvm error... page not available on stack");
+    }
+    pa = PTE_ADDR(*pte);
+    flags = PTE_FLAGS(*pte);
+    if((mem = kalloc()) == 0) {
+      goto bad;
+    }
+    memmove(mem, (char*)P2V(pa), PGSIZE);
+    if(mappages(d, (void*)i, PGSIZE, V2P(mem), flags) < 0) {
+      goto bad;
+    }
+  }
+
   return d;
+
 
 bad:
   freevm(d);
