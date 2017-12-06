@@ -76,7 +76,7 @@ exec(char *path, char **argv)
   userstack_top = KERNBASE - 2*PGSIZE;
   if((sp = allocuvm(pgdir, userstack_top, KERNBASE))==0)
     goto bad;
-  clearpteu(pgdir, (char*)userstack_top);
+  clearpteu(pgdir, (char*)(userstack_top)); //Old bug: NEEDS parenthesis around userstack_top
 
 
   // Push argument strings, prepare rest of stack in ustack.
