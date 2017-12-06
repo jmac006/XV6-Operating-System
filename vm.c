@@ -340,7 +340,7 @@ copyuvm(pde_t *pgdir, uint sz, uint userstack_top)
     return d;
   }
 
-  //Need for loop traversing from top stack to bottom (before KERNBASE)
+  //Need for loop traversing from top stack to bottom (before KERNBASE), copy the stack
   for(i = userstack_top; i < KERNBASE; i+= PGSIZE) {
     if((pte = walkpgdir(pgdir, (void*)i, 0)) == 0) {
       panic("copyuvm error... can't find pte");
