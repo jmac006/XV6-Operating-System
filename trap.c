@@ -12,7 +12,7 @@
 struct gatedesc idt[256];
 extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
-uint ticks, base, temp;
+uint ticks, base;
 
 void
 tvinit(void)
@@ -81,18 +81,20 @@ trap(struct trapframe *tf)
     //cprintf("stack is growing\n");
     if(rcr2() < myproc()->userstack_top && rcr2() > (myproc()->userstack_top - PGSIZE)){  
       base = (myproc()->userstack_top - PGSIZE); 
+      //allocate new page
       if(allocuvm(myproc()->pgdir,base, myproc()->userstack_top) == 0){
   	    goto PageFault;  
   	  }
+      //record position of stack
       myproc()->userstack_top = base;
-      cprintf("stack located at :0x%x\n", myproc()->userstack_top);
+      //cprintf("stack located at :0x%x\n", myproc()->userstack_top);
       break;
     }
   PageFault:
-	  cprintf("pid %d %s: trap %d err %d on cpu %d "
-		"eip 0x%x add 0x%0--kill proc top stack 0x%x\n",
-		myproc()->pid, myproc()->name, tf->trapno,
-		tf->err, cpuid(), tf->eip, rcr2(), myproc()->userstack_top);
+	  cprintf("page fault! pid %d %s: trap %d err %d on cpu %d "
+		        "eip 0x%x add 0x%x--kill proc, top user stack 0x%x\n",
+		        myproc()->pid, myproc()->name, tf->trapno,
+		        tf->err, cpuid(), tf->eip, rcr2(), myproc()->userstack_top);
 	        myproc()->killed = 1;
 
   break;

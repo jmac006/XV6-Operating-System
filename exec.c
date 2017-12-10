@@ -66,9 +66,9 @@ exec(char *path, char **argv)
   // Make the first inaccessible.  Use the second as the user stack.
   /*
   sz = PGROUNDUP(sz);
-  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0)
+  if((sz = allocuvm(pgdir, sz, sz + 2*PGSIZE)) == 0) //creates two pages, one for the stack + guard page
     goto bad;
-  clearpteu(pgdir, (char*)(sz - 2*PGSIZE));
+  clearpteu(pgdir, (char*)(sz - 2*PGSIZE)); 
   sp = sz;*/
 
   //KERNBASE defined in memlayout.h
