@@ -71,6 +71,10 @@ exec(char *path, char **argv)
   clearpteu(pgdir, (char*)(sz - 2*PGSIZE)); 
   sp = sz;*/
 
+  //Allocate a page right under KERNBASE to become the new stack
+  //curproc->stackTop = allocuvm(pgdir, KERNBASE - PGSIZE, KERNBASE - 4);
+  curproc->pageNum = 1;
+
   //KERNBASE defined in memlayout.h
   //PGSIZE defined in mmu.h
   userstack_top = KERNBASE - 2*PGSIZE;

@@ -79,6 +79,7 @@ trap(struct trapframe *tf)
     break;
   case T_PGFLT:
     //cprintf("stack is growing\n");
+    myproc()->pageNum += 1;
     if(rcr2() < myproc()->userstack_top && rcr2() > (myproc()->userstack_top - PGSIZE)){  
       base = (myproc()->userstack_top - PGSIZE); 
       //allocate new page
@@ -91,10 +92,8 @@ trap(struct trapframe *tf)
       break;
     }
   PageFault:
-	  cprintf("page fault! pid %d %s: trap %d err %d on cpu %d "
-		        "eip 0x%x add 0x%x--kill proc, top user stack 0x%x\n",
-		        myproc()->pid, myproc()->name, tf->trapno,
-		        tf->err, cpuid(), tf->eip, rcr2(), myproc()->userstack_top);
+	  cprintf("page fault! top user stack 0x%x\nNum Pages: %d\n",
+		        myproc()->userstack_top, myproc()->pageNum);
 	        myproc()->killed = 1;
 
   break;

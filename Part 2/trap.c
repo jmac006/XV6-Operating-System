@@ -85,6 +85,25 @@ trap(struct trapframe *tf)
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
       panic("trap");
+      //Added a check to determine when the stack has run out of space using kalloc() CS153
+      if (kalloc() == 0)
+      {
+          cprintf("OUT OF STACK SPACE\n");
+          cprintf("STOPPED AT %x\n", (myproc()->tf->esp));
+          cprintf("TOP OF CODE + BUFFER: %x\n", myproc()->sz);
+          cprintf("NUM PAGES %d\n", myproc()->pageNum);
+          myproc()->killed = 1;
+          exit();
+      
+      }
+
+      //Check to make sure the stack is properly allocated CS153
+      if (myproc()->tf->esp < myproc()->stackTop)
+      {
+          myproc()->pageNum += 1;
+          allocuvm(myproc()->pgdir, myproc()->stackTop - (myproc()->pageNum*PGSIZE), myproc()->stackTop - ((myproc()->pageNum-1)*PGSIZE));
+          return; 
+      }
     }
     // In user space, assume process misbehaved.
     cprintf("pid %d %s: trap %d err %d on cpu %d "

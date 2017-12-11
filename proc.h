@@ -42,7 +42,8 @@ struct proc {
   enum procstate state;        // Process state
   int pid;                     // Process ID
   struct proc *parent;         // Parent process
-  uint userstack_top;          // Keep track of top of growing stack CS153
+  uint userstack_top;          // Keep track of top of growing stack (Mac/Wilson CS153)
+  int pageNum;                 // Keep track of number of pages in stack
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
   void *chan;                  // If non-zero, sleeping on chan
